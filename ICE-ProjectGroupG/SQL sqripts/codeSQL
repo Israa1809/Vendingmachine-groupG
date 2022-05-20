@@ -1,0 +1,96 @@
+
+
+--------------------------------------------------TABLES------------------------------------------------------
+
+CREATE TABLE `products` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `productTypeId` int DEFAULT NULL,
+  `locationId` int DEFAULT NULL,
+  `quantity` int unsigned DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id_UNIQUE` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+
+
+CREATE TABLE `producttype` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(45) NOT NULL,
+  `imagepath` varchar(45) NOT NULL,
+  `price` int NOT NULL,
+  `sold` int DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idPK_UNIQUE` (`id`),
+  UNIQUE KEY `name_UNIQUE` (`name`),
+  UNIQUE KEY `imagepath_UNIQUE` (`imagepath`)
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+
+
+---------------------------------------------- STORED PROCEDURES ------------------------------------------------
+CREATE DEFINER=`root`@`localhost` PROCEDURE `GetAllProducts`()
+BEGIN
+	select p.locationId, p.quantity
+	, pt.id as ptID, pt.name, pt.imagepath, pt.price, pt.sold
+	from products p
+	inner join producttype pt on pt.id = p.producttypeid
+	order by p.locationId asc
+    ;
+END
+
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `GetAllProductsWithIncomeData`()
+BEGIN
+	select distinct
+	pt.id ptID, pt.name, pt.imagepath, pt.sold
+	, pt.price * pt.sold as income
+	from products p
+	inner join producttype pt on pt.id = p.producttypeid
+	order by p.locationId asc
+	;
+END
+
+
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `UpdateStockProductSold`(IN pid int)
+BEGIN
+	update products p
+	inner join producttype pt on pt.id = p.producttypeid
+	set p.quantity = p.quantity -1, pt.sold = pt.sold + 1
+	where p.id = pid
+    ;
+END
+
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `new_procedure`(
+	IN locationId int
+)
+BEGIN
+	select p.locationId, p.quantity
+	, pt.id as ptID, pt.name, pt.imagepath, pt.price, pt.sold
+	from products p
+	inner join producttype pt on pt.id = p.producttypeid
+    where p.locationId = @locationId
+	order by p.locationId asc
+    ;
+END
+
+
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `GetTotalIncome`()
+BEGIN
+	select SUM(price * sold) from producttype;
+END
+
+
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `GetProductByLocationId`(
+	IN locationId int
+)
+BEGIN
+	select p.locationId, p.quantity
+	, pt.id as ptID, pt.name, pt.imagepath, pt.price, pt.sold
+	from products p
+	inner join producttype pt on pt.id = p.producttypeid
+    where p.locationId = locationId
+	order by p.locationId asc
+    ;
+END
